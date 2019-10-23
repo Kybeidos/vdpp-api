@@ -1,0 +1,1175 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: 'VDPP Fachliche Schnittstelle'
+  description: 'TBD'
+servers:
+  - description: Kybeidos-intern
+    url: http://hw05.kybeidos.de:8083
+security:
+  - OAuth2:
+      - read
+      - write
+paths:
+  /authentication:
+    post:
+      tags:
+        - authentication
+        - clientApi
+      summary: Authenticates a user
+      operationId: postAuthentication
+      description: Authenticates a user
+      security:
+        - OAuth2: []
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+            example: 'Basic KV1QiLCJhbGciOiJIUzI1NiJ9ey'
+      responses:
+        '200':
+          description: 'Ok; authentication successful, the body contains the authorization token'
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9eyJzdWIiOjEwMDAsI'
+                format: byte
+        '403':
+          description: 'Forbidden; invalid credentials'
+  /mandates:
+    get:
+      tags:
+        - mandate
+      summary: Returns an overview of all mandates
+      operationId: getMandates
+      description: |
+        Returns an overview of all mandates a user has access to.
+      security:
+        - OAuth2: [read, admin]
+      responses:
+        '200':
+          description: 'Ok; the body contains links to all mandates'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Link'
+                example:
+                  - rel: 'mandate'
+                    href: '/mandates/hdbw'
+                    method: 'GET'
+                  - rel: 'mandate'
+                    href: '/mandates/munwc'
+                    method: 'GET'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+  /users:
+    get:
+      tags:
+        - user
+      summary: Returns an overview of all users
+      operationId: getUsers
+      description: |
+        Returns an overview of all users.
+      security:
+        - OAuth2: [admin]
+      responses:
+        '200':
+          description: 'Ok; the body contains links to all users'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Link'
+                example:
+                  - rel: 'user'
+                    href: '/users/123e4567-e89b-12d3-a456-55664244'
+                    method: 'GET'
+                  - rel: 'user'
+                    href: '/users/1efa24567-ff21-12d3-a456-e83446a23'
+                    method: 'GET'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    post:
+      tags:
+        - user
+      summary: Create a user
+      operationId: postUser
+      description: |
+        Creates a user.
+      security:
+        - OAuth2: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: 'Created; user created'
+          headers:
+            Location:
+              schema:
+                type: string
+                description: 'URI to the created user'
+                example: '/users/mamuster'
+        '303':
+          description: 'See other; user already exists'
+          headers:
+            Location:
+              schema:
+                type: string
+                description: 'URI to the existing user'
+                example: '/users/mamuster'
+        '400':
+          description: 'Bad request; the input is malformed'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+  /users/{userId}:
+    get:
+      tags:
+        - user
+        - clientApi
+      summary: Returns a specific user
+      operationId: getUser
+      description: |
+        Returns information about a specific user. A regular user cannot access other users.
+      security:
+        - OAuth2: [read, admin]
+      parameters:
+        - in: path
+          name: userId
+          description: 'the identifier of the user'
+          required: true
+          schema:
+            $ref: '#/components/schemas/User/properties/id'
+      responses:
+        '200':
+          description: 'Ok; the body contains information about the user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the user does not exist'
+    put:
+      tags:
+        - user
+        - clientApi
+      summary: Create or replace information about a specific user
+      operationId: putUser
+      description: |
+        Creates or replace information of a specific user. A regular user cannot create or update other users.
+      security:
+        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: userId
+          description: 'the identifier of the user'
+          required: true
+          schema:
+            $ref: '#/components/schemas/User/properties/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: 'Ok; the body contains the updated information about the user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '201':
+          description: 'Created; the body contains the created information about the user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: 'Bad request; the input is malformed'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    patch:
+      tags:
+        - user
+        - clientApi
+      summary: Upserts information about a specific user
+      operationId: patchUser
+      description: |
+        Upserts information about a specific user. Users may update their own user profile, updating other users requires admin permissions.
+      security:
+        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: userId
+          description: 'the identifier of the user'
+          required: true
+          schema:
+            $ref: '#/components/schemas/User/properties/id'
+      requestBody:
+        required: true
+        description: 'New fields will be inserted. Omitted fields will not be updated.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: 'Ok; the body contains the updated information about the user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '201':
+          description: 'Created; the body contains the full information about the user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: 'Bad request; the input is malformed'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    delete:
+      tags:
+        - user
+      summary: Delete a specific user
+      operationId: deleteUser
+      description: |
+        Delete a specific user.
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - in: path
+          name: userId
+          description: 'the identifier of the user'
+          required: true
+          schema:
+            $ref: '#/components/schemas/User/properties/id'
+      responses:
+        '200':
+          description: 'Ok; the user was successfully deleted'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the user does not exist'
+
+  /documents:
+    get:
+      tags:
+        - document
+        - clientApi
+      summary: Returns an overview of all documents belonging to the given mandate identifier
+      operationId: getUserDocuments
+      description: |
+        Returns an overview of all documents belonging to the given mandate identifier, depending on the permissions.
+      security:
+        - OAuth2: [read, admin]
+      responses:
+        '200':
+          description: 'Ok; the body contains links to documents'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Link'
+                example:
+                  - rel: 'document'
+                    href: '/documents/hdman/some/path/doc.txt'
+                    method: 'GET'
+                  - rel: 'document'
+                    href: '/documents/hdman/another/path/doc.txt'
+                    method: 'GET'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    post:
+      tags:
+        - document
+        - clientApi
+      summary: Create a document
+      operationId: postDocument
+      description: |
+        Creates a document.
+      security:
+        - OAuth2: [write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '201':
+          description: 'Created; document created'
+          headers:
+            Location:
+              schema:
+                type: string
+                description: 'URI to the created document'
+                example: '/documents/25dfa29ea1848d72'
+        '303':
+          description: 'See other; document already exists'
+          headers:
+            Location:
+              schema:
+                type: string
+                description: 'URI to the existing document'
+                example: '/documents/25dfa29ea1848d72'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+  /documents/{mandateId}/{path}:
+    get:
+      tags:
+        - document
+        - clientApi
+      summary: Returns information about a specific document
+      operationId: getUserDocument
+      description: |
+        Returns information about a specific document.
+      security:
+        - OAuth2: [read, admin]
+      parameters:
+        - in: path
+          name: mandateId
+          description: 'the identifier of the mandate'
+          required: true
+          schema:
+            type: string
+            example: 'hdman'
+        - in: path
+          name: path
+          description: 'the full path to a document'
+          required: true
+          schema:
+            type: string
+            example: 'some/path/doc.txt'
+      responses:
+        '200':
+          description: 'Ok; the body contains information about the document'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: ['no-cache']
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the document does not exist'
+    put:
+      tags:
+        - document
+        - clientApi
+      summary: Creates or replaces a specific document
+      operationId: putUserDocument
+      description: |
+        Replaces a specific document. Creation is only allowed for users with admin permissions.
+      security:
+        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: mandateId
+          description: 'the identifier of the mandate'
+          required: true
+          schema:
+            type: string
+            example: 'hdman'
+        - in: path
+          name: path
+          description: 'the full path to a document'
+          required: true
+          schema:
+            type: string
+            example: 'some/path/doc.txt'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: 'Ok; the document was updated'
+        '201':
+          description: 'Created; the document was created'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    patch:
+      tags:
+        - document
+        - clientApi
+      summary: Upserts a specific document
+      operationId: patchUserDocument
+      description: |
+        Upserts a specific document.
+      security:
+        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: mandateId
+          description: 'the identifier of the mandate'
+          required: true
+          schema:
+            type: string
+            example: 'hdman'
+        - in: path
+          name: path
+          description: 'the full path to a document'
+          required: true
+          schema:
+            type: string
+            example: 'some/path/doc.txt'
+      requestBody:
+        required: true
+        description: 'New fields will be inserted. Omitted fields will not be updated.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: 'Ok; the document was updated'
+        '201':
+          description: 'Created; the document was created'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    delete:
+      tags:
+        - document
+        - clientApi
+      summary: Deletes a specific document
+      operationId: deleteUserDocument
+      description: |
+        Deletes a specific document.  Requires special permissions to delete the document of another user.
+      security:
+        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: mandateId
+          description: 'the identifier of the mandate'
+          required: true
+          schema:
+            type: string
+            example: 'hdman'
+        - in: path
+          name: path
+          description: 'the full path to a document'
+          required: true
+          schema:
+            type: string
+            example: 'some/path/doc.txt'
+      responses:
+        '200':
+          description: 'Ok; the document was successfully deleted'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the document does not exist'
+  /services:
+    get:
+      tags:
+        - service
+        - clientApi
+      summary: Returns an overview of all services
+      operationId: getServices
+      description: |
+        Returns an overview of all services the current user has access to.
+      security:
+        - OAuth2: [read, admin]
+      responses:
+        '200':
+          description: 'Ok; the body contains links to the services'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Link'
+                example:
+                  - rel: 'service'
+                    href: '/services/lsasummarization'
+                    method: 'GET'
+                  - rel: 'service'
+                    href: '/services/betamodelling'
+                    method: 'GET'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+  /services/{serviceId}:
+    get:
+      tags:
+        - service
+        - clientApi
+      summary: Returns information about a specific service
+      operationId: getService
+      description: |
+        Returns information about a specific service.
+      security:
+        - OAuth2: [read]
+      parameters:
+        - in: path
+          name: serviceId
+          description: 'the ID of the service'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Service/properties/id'
+      responses:
+        '200':
+          description: 'Ok; the body contains information about the service'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    put:
+      tags:
+        - service
+      summary: Creates or replaces a specific service
+      operationId: putService
+      description: |
+        Creates or replaces a specific service.
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - in: path
+          name: serviceId
+          description: 'the ID of the service'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Service/properties/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+      responses:
+        '200':
+          description: 'Ok; the service was updated'
+        '201':
+          description: 'Created; the service was created'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    patch:
+      tags:
+        - service
+      summary: Upserts a specific service
+      operationId: patchService
+      description: |
+        Upserts a specific service.
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - in: path
+          name: serviceId
+          description: 'the ID of the service'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Service/properties/id'
+      requestBody:
+        required: true
+        description: 'New fields will be inserted. Omitted fields will not be updated.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+      responses:
+        '200':
+          description: 'Ok; the service was updated'
+        '201':
+          description: 'Created; the service was created'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    delete:
+      tags:
+        - service
+      summary: Deletes a specific service
+      operationId: deleteService
+      description: |
+        Deletes a specific service.
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - in: path
+          name: serviceId
+          description: 'the ID of the service'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Service/properties/id'
+      responses:
+        '200':
+          description: 'Ok; the service was successfully deleted'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the service does not exist'
+  /requests:
+    get:
+      tags:
+        - request
+        - clientApi
+      summary: Returns an overview of all requests
+      operationId: getRequests
+      description: |
+        Returns an overview of all requests the current user has access to.
+      security:
+        - OAuth2: [read, admin]
+      responses:
+        '200':
+          description: 'Ok; the body contains links to the requests'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Link'
+                example:
+                  - rel: 'request'
+                    href: '/requests/25dfa29ea1848d72'
+                    method: 'GET'
+                  - rel: 'request'
+                    href: '/requests/ea1848d7225dfa29'
+                    method: 'GET'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    post:
+      tags:
+        - request
+        - clientApi
+      summary: Create a request
+      operationId: postRequest
+      description: |
+        Creates a request.
+      security:
+        - OAuth2: [write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+            example:
+              serviceName: 'LSA Summarization'
+              parameters:
+                - name: 'numSentences'
+                  values: ['10']
+              documents:
+                - rel: 'document'
+                  href: '/documents/25dfa29ea1848d72'
+                  method: 'GET'
+      responses:
+        '201':
+          description: 'Created; request created'
+          headers:
+            Location:
+              schema:
+                type: string
+                description: 'URI to the created request'
+                example: '/requests/25dfa29ea1848d72'
+        '303':
+          description: 'See other; request already exists'
+          headers:
+            Location:
+              schema:
+                type: string
+                description: 'URI to the existing request'
+                example: '/requests/25dfa29ea1848d72'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+  /requests/{requestId}:
+    get:
+      tags:
+        - request
+        - clientApi
+      summary: Returns information about a specific request
+      operationId: getRequest
+      description: |
+        Returns information about a specific request.
+      security:
+        - OAuth2: [read, admin]
+      parameters:
+        - in: path
+          name: requestId
+          description: 'the identifier of the request'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Request/properties/id'
+      responses:
+        '200':
+          description: 'Ok; the body contains information about the request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+              example:
+                serviceName: 'LSA Summarization'
+                parameters:
+                  - name: 'numSentences'
+                    values: ['10']
+                documents:
+                  - rel: 'document'
+                    href: '/documents/25dfa29ea1848d72'
+                    method: 'GET'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the request does not exist'
+    delete:
+      tags:
+        - request
+        - clientApi
+      summary: Cancels a specific request
+      operationId: deleteRequest
+      description: |
+        Cancels a specific request. A request that is already being processed will either be canceled or its results discarded.
+      security:
+        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: requestId
+          description: 'the identifier of the request'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Request/properties/id'
+      responses:
+        '200':
+          description: 'Ok; the request was deleted'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the request does not exist'
+  /requests/{requestId}/status:
+    get:
+      tags:
+        - request
+        - clientApi
+      summary: Queries the status of a specific request
+      operationId: getRequestStatus
+      description: |
+        Queries the status of a specific request.
+      security:
+        - OAuth2: [read, admin]
+      parameters:
+        - in: path
+          name: requestId
+          description: 'the identifier of the request'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Request/properties/id'
+      responses:
+        '200':
+          description: 'Ok; the body contains the status of the request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestStatus'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the request does not exist'
+    patch:
+      tags:
+        - request
+      summary: Upserts the status of a specific request
+      operationId: patchRequestStatus
+      description: |
+        Upserts the status of a specific request.
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - in: path
+          name: requestId
+          description: 'the identifier of the request'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Request/properties/id'
+      responses:
+        '200':
+          description: 'Ok; status was updated'
+        '201':
+          description: 'Created; status was created'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+
+  /requests/{requestId}/result:
+    get:
+      tags:
+        - request
+        - clientApi
+      summary: Get the processing result for a specific request
+      operationId: getRequestResult
+      description: |
+        Get the processing result for a specific request.
+      security:
+        - OAuth2: [read, admin]
+      parameters:
+        - in: path
+          name: requestId
+          description: 'the identifier of the request'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Request/properties/id'
+      responses:
+        '200':
+          description: 'Ok; the body contains the status of the request'
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'TODO'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the request does not exist'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants read and write access
+            admin: Grants access to admin operations
+  schemas:
+    HashIdentifier:
+      description: 'This should be an identifier that should not change when the object is renamed or modified.'
+      type: integer
+      format: int64
+      example: '25dfa29ea1848d72'
+    User:
+      type: object
+      required:
+        - email
+        - username
+        - fullName
+        - organisation
+        - roles
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-55664244'
+        email:
+          type: string
+          format: email
+          example: 'max.mustermann@muster.de'
+        username:
+          type: string
+          example: 'mamuster'
+        fullName:
+          type: string
+          example: 'Max Mustermann'
+        organisation:
+          type: string
+          example: 'Muster GmbH'
+        roles:
+          type: array
+          items:
+            type: string
+          example: ['admin', 'user']
+    Payment:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        dateCreated:
+          type: string
+          format: 'date-time'
+        dateFinished:
+          type: string
+          format: 'date-time'
+    Organisation:
+      type: object
+      properties:
+        homepage:
+          type: string
+        name:
+          type: string
+        address:
+          type: array
+          items:
+            type: string
+    Document:
+      type: object
+      required:
+        - path
+        - url
+      properties:
+        creator:
+          $ref: '#/components/schemas/User/properties/id'
+        editor:
+          $ref: '#/components/schemas/User/properties/id'
+        dateCreated:
+          type: string
+          format: 'date-time'
+          example: '2019-07-11T15:32:10.000Z'
+        dateModified:
+          type: string
+          format: 'date-time'
+          example: '2019-07-15T15:32:28.000Z'
+        encodingFormat:
+          type: string
+          example: 'text/plain'
+        path:
+          type: string
+          example: '/some/path/summary.txt'
+        url:
+          type: string
+          example: 'hdfs://someserv.er/summary.txt'
+        geodata:
+          type: string
+    Service:
+      type: object
+      required:
+        - name
+        - code
+        - serviceType
+        - supportedMimeTypes
+        - parameters
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-55664244'
+        name:
+          type: string
+          example: 'LSA Summarization'
+        code:
+          type: string
+          example: 'SUMMARIZATLSA'
+        description:
+          type: string
+          example: 'Creates a summarization using Latent Semantic Analysis'
+        serviceType:
+          type: string
+          example: 'Summariziation'
+        supportedMimeTypes:
+          type: array
+          items:
+            type: string
+            example: ["text/plain", "application/json"]
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceParameterDescription'
+    ServiceParameterDescription:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          example: 'numSentences'
+        description:
+          type: string
+          example: 'Controls the maximum number of sentences the summarization should consist of'
+        type:
+          type: string
+          example: 'Integer'
+        constraints:
+          type: array
+          example: ['>0', '<1000']
+          items:
+            type: string
+        displayInUI:
+          type: boolean
+    ServiceParameterValue:
+      type: object
+      required:
+        - name
+        - values
+      properties:
+        name:
+          type: string
+          example: 'numSentences'
+        values:
+          type: array
+          example: ['10']
+          items:
+            type: string
+    Request:
+      type: object
+      required:
+        - serviceCode
+        - parameters
+        - documents
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-55664244'
+        serviceCode:
+          $ref: '#/components/schemas/Service/properties/code'
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceParameterValue'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document/properties/path'
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestResult'
+    RequestStatus:
+      type: object
+      required:
+        - dateCreated
+        - dateModified
+        - statusCode
+        - statusMessage
+      properties:
+        dateCreated:
+          type: string
+          format: 'date-time'
+          example: '2019-07-10T15:32:28.000Z'
+        dateModified:
+          type: string
+          format: 'date-time'
+          example: '2019-07-15T15:32:28.000Z'
+        statusCode:
+          type: string
+        statusMessage:
+          type: string
+    RequestResult:
+      type: object
+      properties:
+        dateCreated:
+          type: string
+          format: 'date-time'
+          example: '2019-07-10T15:32:28.000Z'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestItem'
+    RequestItem:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        encodingFormat:
+          type: string
+        url:
+          type: string
+        type:
+          type: string
+    Link:
+      type: object
+      required:
+        - rel
+        - href
+        - method
+      properties:
+        rel:
+          type: string
+          example: 'user'
+        href:
+          type: string
+          format: URI
+          example: '/users/mamuster'
+        method:
+          type: string
+          enum:
+            - DELETE
+            - GET
+            - PATCH
+            - POST
+            - PUT
+    Mandate:
+      type: object
+      required:
+        - users
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessPolicy'
+    AccessPolicy:
+      type: object
+      required:
+        - user
+        - read
+        - write
+      properties:
+        user:
+          $ref: '#/components/schemas/Link'
+        read:
+          type: boolean
+          example: true
+        write:
+          type: boolean
+          example: false
