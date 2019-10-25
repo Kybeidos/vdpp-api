@@ -101,12 +101,16 @@ paths:
     post:
       tags:
         - user
-      summary: Create a user
+        - clientApi
+      summary: Create/register a user
       operationId: postUser
-      description: |
-        Creates a user.
+      description: | #TODO: Implement email-verified registration
+        Creates/registers a user. The registration will fail if a user with the given username (in the request body)
+        already exists. If a new user is created, the user will be sent a confirmation email to complete their
+        registration. Upon registration, users authenticate themselves and are thus valid to use other features
+        of the API.
       security:
-        - OAuth2: [admin]
+        - OAuth2: [write] #TODO: Check whether we want authentication for user registration
       requestBody:
         required: true
         content:
@@ -122,16 +126,13 @@ paths:
                 type: string
                 description: 'URI to the created user'
                 example: '/users/mamuster'
-        '303':
-          description: 'See other; user already exists'
-          headers:
-            Location:
+        '400':
+          description: 'Bad request; the input is malformed or the user already exists'
+          content:
+            text/plain:
               schema:
                 type: string
-                description: 'URI to the existing user'
-                example: '/users/mamuster'
-        '400':
-          description: 'Bad request; the input is malformed'
+                description: 'The error message with the exact cause'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -144,7 +145,7 @@ paths:
       summary: Returns a specific user
       operationId: getUser
       description: |
-        Returns information about a specific user. A regular user cannot access other users.
+        Returns information about a specific user. A non-admin user cannot request information about other users.
       security:
         - OAuth2: [read, admin]
       parameters:
@@ -174,7 +175,8 @@ paths:
       summary: Create or replace information about a specific user
       operationId: putUser
       description: |
-        Creates or replace information of a specific user. A regular user cannot create or update other users.
+        Creates or replaces information of a specific user. A non-admin user cannot update other users. A user cannot
+        invalidate required fields.
       security:
         - OAuth2: [write, admin]
       parameters:
@@ -204,7 +206,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: 'Bad request; the input is malformed'
+          description: 'Bad request; the input is malformed or would invalidate required fields'
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: 'The error message with the exact cause'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -216,7 +223,8 @@ paths:
       summary: Upserts information about a specific user
       operationId: patchUser
       description: |
-        Upserts information about a specific user. Users may update their own user profile, updating other users requires admin permissions.
+        Upserts information about a specific user. Users may update their own user profile, updating other users
+        requires admin permissions. Users may not invalidate required fields.
       security:
         - OAuth2: [write, admin]
       parameters:
@@ -247,7 +255,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: 'Bad request; the input is malformed'
+          description: 'Bad request; the input is malformed or required fields have been invalidated'
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: 'The error message with the exact cause'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -255,7 +268,7 @@ paths:
     delete:
       tags:
         - user
-      summary: Delete a specific user
+      summary: Delete a specific user #TODO: Maybe users may delete themselves?
       operationId: deleteUser
       description: |
         Delete a specific user.
@@ -524,14 +537,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Link'
-                example:
-                  - rel: 'service'
-                    href: '/services/lsasummarization'
-                    method: 'GET'
-                  - rel: 'service'
-                    href: '/services/betamodelling'
-                    method: 'GET'
+                  $ref: '#/components/schemas/Service'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -541,7 +547,7 @@ paths:
       tags:
         - service
         - clientApi
-      summary: Returns information about a specific service
+      summary: Returns information about a specific service #TODO: Currently superfluous because the user receives all service info in GET /services
       operationId: getService
       description: |
         Returns information about a specific service.
@@ -930,6 +936,9 @@ components:
         organisation:
           type: string
           example: 'Muster GmbH'
+        registrationStatus:
+          type: string
+          example: 'PENDING' #TODO: Implement registration status
         roles:
           type: array
           items:
