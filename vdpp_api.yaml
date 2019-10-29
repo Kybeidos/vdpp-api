@@ -16,6 +16,7 @@ paths:
       tags:
         - authentication
         - clientApi
+        - notImplemented
       summary: Authenticates a user
       operationId: postAuthentication
       description: Authenticates a user
@@ -42,6 +43,7 @@ paths:
     get:
       tags:
         - mandate
+        - notImplemented
       summary: Returns an overview of all mandates
       operationId: getMandates
       description: |
@@ -56,14 +58,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Link'
-                example:
-                  - rel: 'mandate'
-                    href: '/mandates/hdbw'
-                    method: 'GET'
-                  - rel: 'mandate'
-                    href: '/mandates/munwc'
-                    method: 'GET'
+                  $ref: '#/components/schemas/Mandate'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -86,14 +81,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Link'
-                example:
-                  - rel: 'user'
-                    href: '/users/123e4567-e89b-12d3-a456-55664244'
-                    method: 'GET'
-                  - rel: 'user'
-                    href: '/users/1efa24567-ff21-12d3-a456-e83446a23'
-                    method: 'GET'
+                  $ref: '#/components/schemas/User'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -118,14 +106,12 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
       responses:
-        '201':
+        '200':
           description: 'Created; user created'
-          headers:
-            Location:
+          content:
+            application/json:
               schema:
-                type: string
-                description: 'URI to the created user'
-                example: '/users/mamuster'
+                $ref: '#/components/schemas/User'
         '400':
           description: 'Bad request; the input is malformed or the user already exists'
           content:
@@ -199,12 +185,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        '201':
-          description: 'Created; the body contains the created information about the user'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '400':
           description: 'Bad request; the input is malformed or would invalidate required fields'
           content:
@@ -236,7 +216,7 @@ paths:
             $ref: '#/components/schemas/User/properties/id'
       requestBody:
         required: true
-        description: 'New fields will be inserted. Omitted fields will not be updated.'
+        description: 'New fields will be inserted. Omitted fields will not be changed.'
         content:
           application/json:
             schema:
@@ -244,12 +224,6 @@ paths:
       responses:
         '200':
           description: 'Ok; the body contains the updated information about the user'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '201':
-          description: 'Created; the body contains the full information about the user'
           content:
             application/json:
               schema:
@@ -296,28 +270,21 @@ paths:
       tags:
         - document
         - clientApi
-      summary: Returns an overview of all documents belonging to the given mandate identifier
-      operationId: getUserDocuments
+      summary: Returns an overview of all documents the user has access to
+      operationId: getDocuments
       description: |
-        Returns an overview of all documents belonging to the given mandate identifier, depending on the permissions.
+        Returns an overview of all documents the user has access to.
       security:
         - OAuth2: [read, admin]
       responses:
         '200':
-          description: 'Ok; the body contains links to documents'
+          description: 'Ok; the body contains all documents the user has access to'
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Link'
-                example:
-                  - rel: 'document'
-                    href: '/documents/hdman/some/path/doc.txt'
-                    method: 'GET'
-                  - rel: 'document'
-                    href: '/documents/hdman/another/path/doc.txt'
-                    method: 'GET'
+                  $ref: '#/components/schemas/Document'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -339,22 +306,20 @@ paths:
             schema:
               $ref: '#/components/schemas/Document'
       responses:
-        '201':
-          description: 'Created; document created'
+        '200':
+          description: 'Created; document created or updated'
           headers:
             Location:
               schema:
                 type: string
                 description: 'URI to the created document'
-                example: '/documents/25dfa29ea1848d72'
-        '303':
-          description: 'See other; document already exists'
-          headers:
-            Location:
+                example: '/documents/mandate/some/path/doc.txt'
+        '400':
+          description: 'Bad request; the document contains invalid fields, the body describes which'
+          content:
+            text/plain:
               schema:
                 type: string
-                description: 'URI to the existing document'
-                example: '/documents/25dfa29ea1848d72'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -365,7 +330,7 @@ paths:
         - document
         - clientApi
       summary: Returns information about a specific document
-      operationId: getUserDocument
+      operationId: getDocument
       description: |
         Returns information about a specific document.
       security:
@@ -392,11 +357,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
-          headers:
-            Cache-Control:
-              schema:
-                type: string
-                enum: ['no-cache']
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -408,7 +368,7 @@ paths:
         - document
         - clientApi
       summary: Creates or replaces a specific document
-      operationId: putUserDocument
+      operationId: putDocument
       description: |
         Replaces a specific document. Creation is only allowed for users with admin permissions.
       security:
@@ -436,9 +396,17 @@ paths:
               $ref: '#/components/schemas/Document'
       responses:
         '200':
-          description: 'Ok; the document was updated'
-        '201':
-          description: 'Created; the document was created'
+          description: 'Ok; the document was updated and the body contains the updated document'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          description: 'Bad request; the document contains invalid fields, the body describes which'
+          content:
+            text/plain:
+              schema:
+                type: string
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -448,7 +416,7 @@ paths:
         - document
         - clientApi
       summary: Upserts a specific document
-      operationId: patchUserDocument
+      operationId: patchDocument
       description: |
         Upserts a specific document.
       security:
@@ -477,9 +445,17 @@ paths:
               $ref: '#/components/schemas/Document'
       responses:
         '200':
-          description: 'Ok; the document was updated'
-        '201':
-          description: 'Created; the document was created'
+          description: 'Ok; the document was updated and the body contains the updated document'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          description: 'Bad request; the document contains invalid fields, the body describes which'
+          content:
+            text/plain:
+              schema:
+                type: string
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -489,7 +465,7 @@ paths:
         - document
         - clientApi
       summary: Deletes a specific document
-      operationId: deleteUserDocument
+      operationId: deleteDocument
       description: |
         Deletes a specific document.  Requires special permissions to delete the document of another user.
       security:
@@ -595,9 +571,17 @@ paths:
               $ref: '#/components/schemas/Service'
       responses:
         '200':
-          description: 'Ok; the service was updated'
-        '201':
-          description: 'Created; the service was created'
+          description: 'Ok; the service was created or updated and the body contains the new service'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: 'Bad request; the service contains invalid fields, the body describes which'
+          content:
+            text/plain:
+              schema:
+                type: string
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -627,9 +611,17 @@ paths:
               $ref: '#/components/schemas/Service'
       responses:
         '200':
-          description: 'Ok; the service was updated'
-        '201':
-          description: 'Created; the service was created'
+          description: 'Ok; the service was created or updated and the body contains the new service'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: 'Bad request; the service contains invalid fields, the body describes which'
+          content:
+            text/plain:
+              schema:
+                type: string
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -678,14 +670,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Link'
-                example:
-                  - rel: 'request'
-                    href: '/requests/25dfa29ea1848d72'
-                    method: 'GET'
-                  - rel: 'request'
-                    href: '/requests/ea1848d7225dfa29'
-                    method: 'GET'
+                  $ref: '#/components/schemas/Request'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -716,22 +701,18 @@ paths:
                   href: '/documents/25dfa29ea1848d72'
                   method: 'GET'
       responses:
-        '201':
+        '200':
           description: 'Created; request created'
-          headers:
-            Location:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+        '400':
+          description: 'Bad request; the request contains invalid fields, the body describes which'
+          content:
+            text/plain:
               schema:
                 type: string
-                description: 'URI to the created request'
-                example: '/requests/25dfa29ea1848d72'
-        '303':
-          description: 'See other; request already exists'
-          headers:
-            Location:
-              schema:
-                type: string
-                description: 'URI to the existing request'
-                example: '/requests/25dfa29ea1848d72'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -761,15 +742,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Request'
-              example:
-                serviceName: 'LSA Summarization'
-                parameters:
-                  - name: 'numSentences'
-                    values: ['10']
-                documents:
-                  - rel: 'document'
-                    href: '/documents/25dfa29ea1848d72'
-                    method: 'GET'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -851,9 +823,7 @@ paths:
             $ref: '#/components/schemas/Request/properties/id'
       responses:
         '200':
-          description: 'Ok; status was updated'
-        '201':
-          description: 'Created; status was created'
+          description: 'Ok; status was created or updated'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -905,11 +875,6 @@ components:
             write: Grants read and write access
             admin: Grants access to admin operations
   schemas:
-    HashIdentifier:
-      description: 'This should be an identifier that should not change when the object is renamed or modified.'
-      type: integer
-      format: int64
-      example: '25dfa29ea1848d72'
     User:
       type: object
       required:
@@ -923,6 +888,7 @@ components:
           type: string
           format: uuid
           example: '123e4567-e89b-12d3-a456-55664244'
+          readOnly: true
         email:
           type: string
           format: email
@@ -939,6 +905,7 @@ components:
         registrationStatus:
           type: string
           example: 'PENDING' #TODO: Implement registration status
+          readOnly: true
         roles:
           type: array
           items:
@@ -973,9 +940,9 @@ components:
         - url
       properties:
         creator:
-          $ref: '#/components/schemas/User/properties/id'
+          $ref: '#/components/schemas/User'
         editor:
-          $ref: '#/components/schemas/User/properties/id'
+          $ref: '#/components/schemas/User'
         dateCreated:
           type: string
           format: 'date-time'
@@ -1008,6 +975,7 @@ components:
           type: string
           format: uuid
           example: '123e4567-e89b-12d3-a456-55664244'
+          readOnly: true
         name:
           type: string
           example: 'LSA Summarization'
@@ -1076,6 +1044,7 @@ components:
           type: string
           format: uuid
           example: '123e4567-e89b-12d3-a456-55664244'
+          readOnly: true
         serviceCode:
           $ref: '#/components/schemas/Service/properties/code'
         parameters:
