@@ -270,10 +270,11 @@ paths:
       tags:
         - document
         - clientApi
-      summary: Returns an overview of all documents the user has access to
+      summary: Returns an overview of all documents the user has access to.
       operationId: getDocuments
       description: |
-        Returns an overview of all documents the user has access to.
+        Returns an overview of all documents the user has access to. The stress is on "access" here, because this
+        request also returns documents of other users the requesting user can access with at least read permissions.
       security:
         - OAuth2: [read, admin]
       responses:
@@ -296,7 +297,9 @@ paths:
       summary: Create a document
       operationId: postDocument
       description: |
-        Creates a document.
+        Creates a document. If the path given in the request body already exists, the existing document will be
+        replaced. Use GET /document/{path} first to validate whether the document already exists before using
+        this request.
       security:
         - OAuth2: [write]
       requestBody:
