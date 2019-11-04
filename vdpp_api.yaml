@@ -298,8 +298,8 @@ paths:
       operationId: postDocument
       description: |
         Creates a document. If the path given in the request body already exists, the existing document will be
-        replaced. Use GET /document/{path} first to validate whether the document already exists before using
-        this request.
+        replaced. Use GET /documents/{mandateId}/{path} first to validate whether the document already exists before
+        using this request.
       security:
         - OAuth2: [write]
       requestBody:
@@ -332,10 +332,10 @@ paths:
       tags:
         - document
         - clientApi
-      summary: Returns information about a specific document
+      summary: Returns information about the specified document
       operationId: getDocument
       description: |
-        Returns information about a specific document.
+        Returns information about the specified document.
       security:
         - OAuth2: [read, admin]
       parameters:
@@ -373,7 +373,7 @@ paths:
       summary: Creates or replaces a specific document
       operationId: putDocument
       description: |
-        Replaces a specific document. Creation is only allowed for users with admin permissions.
+        Creates or replaces a specific document.
       security:
         - OAuth2: [write, admin]
       parameters:
@@ -421,7 +421,8 @@ paths:
       summary: Upserts a specific document
       operationId: patchDocument
       description: |
-        Upserts a specific document.
+        Updates a specific document. If a document with the given path does not exist, an empty document (with
+        that path) will be created and updated with the patch contained in the request body.
       security:
         - OAuth2: [write, admin]
       parameters:
@@ -441,14 +442,14 @@ paths:
             example: 'some/path/doc.txt'
       requestBody:
         required: true
-        description: 'New fields will be inserted. Omitted fields will not be updated.'
+        description: 'New fields will be inserted. Omitted fields will not be affected by the patch.'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Document'
       responses:
         '200':
-          description: 'Ok; the document was updated and the body contains the updated document'
+          description: 'Ok; the document was created or updated and the body contains the resulting document'
           content:
             application/json:
               schema:
@@ -470,7 +471,8 @@ paths:
       summary: Deletes a specific document
       operationId: deleteDocument
       description: |
-        Deletes a specific document.  Requires special permissions to delete the document of another user.
+        Deletes a specific document. Requires special permissions to delete the document of another user.
+        # TODO: Delete actual document from file system too
       security:
         - OAuth2: [write, admin]
       parameters:
@@ -662,7 +664,7 @@ paths:
       summary: Returns an overview of all requests
       operationId: getRequests
       description: |
-        Returns an overview of all requests the current user has access to.
+        Returns an overview of all submitted requests the current user has access to.
       security:
         - OAuth2: [read, admin]
       responses:
@@ -758,7 +760,8 @@ paths:
       summary: Cancels a specific request
       operationId: deleteRequest
       description: |
-        Cancels a specific request. A request that is already being processed will either be canceled or its results discarded.
+        Cancels a specific request.
+        # TODO: Implement cancellation instead of request deletion (for request and status tracking)
       security:
         - OAuth2: [write, admin]
       parameters:
