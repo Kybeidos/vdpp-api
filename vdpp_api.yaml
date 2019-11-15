@@ -314,9 +314,7 @@ paths:
           headers:
             Location:
               schema:
-                type: string
-                description: 'URI to the created document'
-                example: '/documents/mandate/some/path/doc.txt'
+                $ref: '#/components/schemas/Document'
         '400':
           description: 'Bad request; the document contains invalid fields, the body describes which'
           content:
@@ -692,19 +690,11 @@ paths:
         - OAuth2: [write]
       requestBody:
         required: true
+        description: Result and Status objects should be not passed
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Request'
-            example:
-              serviceName: 'LSA Summarization'
-              parameters:
-                - name: 'numSentences'
-                  values: ['10']
-              documents:
-                - rel: 'document'
-                  href: '/documents/25dfa29ea1848d72'
-                  method: 'GET'
       responses:
         '200':
           description: 'Created; request created'
@@ -962,10 +952,10 @@ components:
           example: 'text/plain'
         path:
           type: string
-          example: '/some/path/summary.txt'
+          example: '/mandate/some/path/summary.txt'
         url:
           type: string
-          example: 'hdfs://someserv.er/summary.txt'
+          example: 'hdfs://someserv.er/summary.txt?op=OPEN'
         geodata:
           type: string
     Service:
