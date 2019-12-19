@@ -550,110 +550,110 @@ paths:
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
-    put:
-      tags:
-        - service
-      summary: Creates or replaces a specific service
-      operationId: putService
-      description: |
-        Creates or replaces a specific service.
-      security:
-        - OAuth2: [admin]
-      parameters:
-        - in: path
-          name: serviceId
-          description: 'the ID of the service'
-          required: true
-          schema:
-            $ref: '#/components/schemas/Service/properties/id'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Service'
-      responses:
-        '200':
-          description: 'Ok; the service was created or updated and the body contains the new service'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Service'
-        '400':
-          description: 'Bad request; the service contains invalid fields, the body describes which'
-          content:
-            text/plain:
-              schema:
-                type: string
-        '401':
-          description: 'Unauthorized; you must supply an authorization token'
-        '403':
-          description: 'Forbidden; insufficient permissions'
-    patch:
-      tags:
-        - service
-      summary: Upserts a specific service
-      operationId: patchService
-      description: |
-        Upserts a specific service.
-      security:
-        - OAuth2: [admin]
-      parameters:
-        - in: path
-          name: serviceId
-          description: 'the ID of the service'
-          required: true
-          schema:
-            $ref: '#/components/schemas/Service/properties/id'
-      requestBody:
-        required: true
-        description: 'New fields will be inserted. Omitted fields will not be updated.'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Service'
-      responses:
-        '200':
-          description: 'Ok; the service was created or updated and the body contains the new service'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Service'
-        '400':
-          description: 'Bad request; the service contains invalid fields, the body describes which'
-          content:
-            text/plain:
-              schema:
-                type: string
-        '401':
-          description: 'Unauthorized; you must supply an authorization token'
-        '403':
-          description: 'Forbidden; insufficient permissions'
-    delete:
-      tags:
-        - service
-      summary: Deletes a specific service
-      operationId: deleteService
-      description: |
-        Deletes a specific service.
-      security:
-        - OAuth2: [admin]
-      parameters:
-        - in: path
-          name: serviceId
-          description: 'the ID of the service'
-          required: true
-          schema:
-            $ref: '#/components/schemas/Service/properties/id'
-      responses:
-        '200':
-          description: 'Ok; the service was successfully deleted'
-        '401':
-          description: 'Unauthorized; you must supply an authorization token'
-        '403':
-          description: 'Forbidden; insufficient permissions'
-        '404':
-          description: 'Not found; the service does not exist'
+#    put:
+#      tags:
+#        - service
+#      summary: Creates or replaces a specific service
+#      operationId: putService
+#      description: |
+#        Creates or replaces a specific service.
+#      security:
+#        - OAuth2: [admin]
+#      parameters:
+#        - in: path
+#          name: serviceId
+#          description: 'the ID of the service'
+#          required: true
+#          schema:
+#            $ref: '#/components/schemas/Service/properties/id'
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/Service'
+#      responses:
+#        '200':
+#          description: 'Ok; the service was created or updated and the body contains the new service'
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Service'
+#        '400':
+#          description: 'Bad request; the service contains invalid fields, the body describes which'
+#          content:
+#            text/plain:
+#              schema:
+#                type: string
+#        '401':
+#          description: 'Unauthorized; you must supply an authorization token'
+#        '403':
+#          description: 'Forbidden; insufficient permissions'
+#    patch:
+#      tags:
+#        - service
+#      summary: Upserts a specific service
+#      operationId: patchService
+#      description: |
+#        Upserts a specific service.
+#      security:
+#        - OAuth2: [admin]
+#      parameters:
+#        - in: path
+#          name: serviceId
+#          description: 'the ID of the service'
+#          required: true
+#          schema:
+#            $ref: '#/components/schemas/Service/properties/id'
+#      requestBody:
+#        required: true
+#        description: 'New fields will be inserted. Omitted fields will not be updated.'
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/Service'
+#      responses:
+#        '200':
+#          description: 'Ok; the service was created or updated and the body contains the new service'
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Service'
+#        '400':
+#          description: 'Bad request; the service contains invalid fields, the body describes which'
+#          content:
+#            text/plain:
+#              schema:
+#                type: string
+#        '401':
+#          description: 'Unauthorized; you must supply an authorization token'
+#        '403':
+#          description: 'Forbidden; insufficient permissions'
+#    delete:
+#      tags:
+#        - service
+#      summary: Deletes a specific service
+#      operationId: deleteService
+#      description: |
+#        Deletes a specific service.
+#      security:
+#        - OAuth2: [admin]
+#      parameters:
+#        - in: path
+#          name: serviceId
+#          description: 'the ID of the service'
+#          required: true
+#          schema:
+#            $ref: '#/components/schemas/Service/properties/id'
+#      responses:
+#        '200':
+#          description: 'Ok; the service was successfully deleted'
+#        '401':
+#          description: 'Unauthorized; you must supply an authorization token'
+#        '403':
+#          description: 'Forbidden; insufficient permissions'
+#        '404':
+#          description: 'Not found; the service does not exist'
   /requests:
     get:
       tags:
