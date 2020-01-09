@@ -1034,7 +1034,7 @@ components:
       required:
         - serviceCode
         - parameters
-        - documents
+        - documentIds
       properties:
         id:
           type: string
@@ -1047,7 +1047,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ServiceParameterValue'
-        documents:
+        documentIds:
           type: array
           items:
             $ref: '#/components/schemas/Document/properties/path'
