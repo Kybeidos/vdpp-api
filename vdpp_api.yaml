@@ -960,6 +960,7 @@ components:
           type: string
     Service:
       type: object
+      readOnly: true
       required:
         - name
         - code
@@ -995,6 +996,7 @@ components:
             $ref: '#/components/schemas/ServiceParameterDescription'
     ServiceParameterDescription:
       type: object
+      readOnly: true
       required:
         - name
         - type
@@ -1055,10 +1057,12 @@ components:
           $ref: '#/components/schemas/RequestStatus'
         result:
           type: array
+          readOnly: true
           items:
             $ref: '#/components/schemas/RequestResult'
     RequestStatus:
       type: object
+      readOnly: true
       required:
         - dateCreated
         - dateModified
@@ -1079,6 +1083,7 @@ components:
           type: string
     RequestResult:
       type: object
+      readOnly: true
       properties:
         dateCreated:
           type: string
@@ -1090,6 +1095,7 @@ components:
             $ref: '#/components/schemas/RequestItem'
     RequestItem:
       type: object
+      readOnly: true
       properties:
         name:
           type: string
