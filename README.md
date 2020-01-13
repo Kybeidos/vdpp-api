@@ -4,7 +4,15 @@
 The Versatile Document Processing Platform (VDPP) offers NLP services to analyze documents of various formats.
 The VDPP REST API is designed around the aspect of documents, (NLP) services and requests to use a service on a subset of documents.
 
-## Structure
+## Table of Contents
+1. [Structure](#1-structure)
+    1. [Documents](#11-documents)
+    2. [Services](#12-services)
+    3. [Requests](#13-requests)
+2. [Example Scenario](#2-example-scenario)
+3. [Links](#3-links)
+
+## 1. Structure
 An application that wants to use the VDPP REST API mainly interacts with three domain objects:
 1. **Documents**:   A document object represents an arbitrary file including various metadata.
                     It is identified by its unique `path`.
@@ -15,7 +23,7 @@ An application that wants to use the VDPP REST API mainly interacts with three d
                     and provides the processing results once available.
                     It is identified by its unique `id`.
                     
-### Documents
+### 1.1. Documents
 Documents act as the data source for VDPP's services. Currently, the platform cannot directly process
 documents located on the user's system. All relevant files must be uploaded instead.
 
@@ -42,11 +50,11 @@ curl --request POST 'http://host:port/documents' \
 
 Either way results in the document uploaded to be available for processing with one of VDPP's services.
 
-### Services
+### 1.2. Services
 The list of available services can be retrieved by sending a `GET /services` request.
 Each service description contains information about the usage (i.e. parametrization) of the service.
 
-### Requests
+### 1.3. Requests
 Requests combine documents and a service to trigger processing in VDPP.
 To create a request, users must `POST` a JSON body to the endpoint `/requests` of the following format:
 ```
@@ -68,7 +76,7 @@ To create a request, users must `POST` a JSON body to the endpoint `/requests` o
 ```
 Sending the request schedules a job for the given service which will be initialized with the given parameters and documents.
 
-## Example Scenario
+## 2. Example Scenario
 Bob wants to automatically summarize a document to get a quick overview of the document's contents.
 
 (1)
@@ -239,3 +247,6 @@ curl --request GET 'http://host:port/requests/fcfd6604-8720-4ba1-9ceb-6de8a0189a
 ]
 ```
 The `url` field describes a download link which Bob can use to download the result file.
+
+## 3. Links
+Current API in Swagger format: http://hw05.kybeidos.de:8090
