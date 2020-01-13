@@ -1075,6 +1075,11 @@ components:
           example: '2019-07-15T15:32:28.000Z'
         statusCode:
           type: string
+          enum:
+            - SCHEDULED
+            - RUNNING
+            - SUCCEEDED
+            - FAILED
         statusMessage:
           type: string
     RequestResult:
