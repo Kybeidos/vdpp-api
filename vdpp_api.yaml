@@ -89,7 +89,6 @@ paths:
     post:
       tags:
         - user
-        - clientApi
       summary: Create/register a user
       operationId: postUser
       description: | #TODO: Implement email-verified registration
@@ -127,7 +126,6 @@ paths:
     get:
       tags:
         - user
-        - clientApi
       summary: Returns a specific user
       operationId: getUser
       description: |
@@ -157,7 +155,6 @@ paths:
     put:
       tags:
         - user
-        - clientApi
       summary: Create or replace information about a specific user
       operationId: putUser
       description: |
@@ -199,7 +196,6 @@ paths:
     patch:
       tags:
         - user
-        - clientApi
       summary: Upserts information about a specific user
       operationId: patchUser
       description: |
