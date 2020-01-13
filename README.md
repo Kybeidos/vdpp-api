@@ -84,14 +84,14 @@ First, he uploads his document using cURL:
 ```
 curl --request POST 'http://host:port/documents' \
 --header 'Content-Type: multipart/form-data' \
---form 'path=/my/unique/path/' \
+--form 'path=/bobsdocuments/' \
 --form 'doc01.txt=@/user/me/doc01.txt'
 ```
 If everything went fine, he should receive the following answer with status code `200 OK`:
 ```
 [
     {
-        "path": "/my/unique/path/doc01.txt",
+        "path": "/bobsdocuments/doc01.txt",
         "creator": null,
         "editor": null,
         "dateCreated": "2020-01-13T13:11:10.236+0000",
@@ -185,7 +185,7 @@ curl --request POST 'http://host:port/requests' \
     	"name": "SUMMLENGTH",
     	"values": ["10"]
     }],
-    "documentIds": ["/my/unique/path/doc01.txt"]
+    "documentIds": ["/bobsdocuments/doc01.txt"]
 }'
 ``` 
 Again, with status code `200 OK`, he receives the following answer:
@@ -201,7 +201,7 @@ Again, with status code `200 OK`, he receives the following answer:
     	"name": "SUMMLENGTH",
     	"values": ["10"]
     }],
-    "documentIds": ["/my/unique/path/doc01.txt"]
+    "documentIds": ["/bobsdocuments/doc01.txt"]
     "status": {
         "dateCreated": "2020-01-13T13:28:07.520+0000",
         "dateModified": "2020-01-13T13:28:07.525+0000",
