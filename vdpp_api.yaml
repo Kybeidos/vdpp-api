@@ -1074,7 +1074,7 @@ paths:
           description: 'the identifier of the service'
           required: true
           schema:
-            $ref: '#/components/schemas/Service/properties/id'
+            $ref: '#/components/schemas/Service/properties/uuid'
       responses:
         '200':
           description: 'Ok; the body contains information about the service'
@@ -1161,7 +1161,7 @@ paths:
           description: 'the identifier of the request'
           required: true
           schema:
-            $ref: '#/components/schemas/Request/properties/id'
+            $ref: '#/components/schemas/Request/properties/uuid'
       responses:
         '200':
           description: 'Ok; the body contains information about the request'
@@ -1192,7 +1192,7 @@ paths:
           description: 'the identifier of the request'
           required: true
           schema:
-            $ref: '#/components/schemas/Request/properties/id'
+            $ref: '#/components/schemas/Request/properties/uuid'
       responses:
         '200':
           description: 'Ok; the request was deleted'
@@ -1219,7 +1219,7 @@ paths:
           description: 'the identifier of the request'
           required: true
           schema:
-            $ref: '#/components/schemas/Request/properties/id'
+            $ref: '#/components/schemas/Request/properties/uuid'
       responses:
         '200':
           description: 'Ok; the body contains the status of the request'
@@ -1248,7 +1248,7 @@ paths:
           description: 'the identifier of the request'
           required: true
           schema:
-            $ref: '#/components/schemas/Request/properties/id'
+            $ref: '#/components/schemas/Request/properties/uuid'
       responses:
         '200':
           description: 'Ok; status was created or updated'
@@ -1274,7 +1274,7 @@ paths:
           description: 'the identifier of the request'
           required: true
           schema:
-            $ref: '#/components/schemas/Request/properties/id'
+            $ref: '#/components/schemas/Request/properties/uuid'
       responses:
         '200':
           description: 'Ok; the body contains the status of the request'
@@ -1368,8 +1368,8 @@ components:
           type: string
           example: 'text/plain'
           readOnly: true
-        domain:
-          $ref: '#/components/schemas/Domain'
+        domainUuid:
+          $ref: '#/components/schemas/Domain/properties/uuid'
     Domain:
       type: object
       required:
@@ -1396,6 +1396,8 @@ components:
             $ref: '#/components/schemas/Document'
         originator:
           $ref: '#/components/schemas/Originator'
+        useCaseUuid:
+          $ref: '#/components/schemas/UseCase/properties/uuid'
     Originator:
       type: object
       required:
@@ -1416,8 +1418,8 @@ components:
           example: 'Kybeidos'
         status:
           $ref: '#/components/schemas/Status'
-        useCase:
-          $ref: '#/components/schemas/UseCase'
+        domainUuid:
+          $ref: '#/components/schemas/Domain/properties/uuid'
         geolocation:
           type: array
           items:
@@ -1459,14 +1461,21 @@ components:
         - supportedMimeTypes
         - parameters
       properties:
-        id:
-          type: string
-          format: uuid
-          example: '123e4567-e89b-12d3-a456-55664244'
-          readOnly: true
+        uuid:
+          $ref: '#/components/schemas/Uuid'
+        createdBy:
+          $ref: '#/components/schemas/User'
+        modifiedBy:
+          $ref: '#/components/schemas/User'
+        dateCreated:
+          $ref: '#/components/schemas/DateTime'
+        dateModified:
+          $ref: '#/components/schemas/DateTime'
         name:
           type: string
           example: 'LSA Summarization'
+        status:
+          $ref: '#/components/schemas/Status'
         code:
           type: string
           example: 'SUMMARIZATLSA'
@@ -1529,11 +1538,21 @@ components:
         - parameters
         - documentIds
       properties:
-        id:
+        uuid:
+          $ref: '#/components/schemas/Uuid'
+        createdBy:
+          $ref: '#/components/schemas/User'
+        modifiedBy:
+          $ref: '#/components/schemas/User'
+        dateCreated:
+          $ref: '#/components/schemas/DateTime'
+        dateModified:
+          $ref: '#/components/schemas/DateTime'
+        name:
           type: string
-          format: uuid
-          example: '123e4567-e89b-12d3-a456-55664244'
-          readOnly: true
+          example: 'Kybeidos'
+        status:
+          $ref: '#/components/schemas/Status'
         serviceCode:
           $ref: '#/components/schemas/Service/properties/code'
         parameters:
@@ -1544,9 +1563,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Document/properties/uuid'
-        status:
+        requestStatus:
           $ref: '#/components/schemas/RequestStatus'
-        result:
+        requestResults:
           type: array
           readOnly: true
           items:
