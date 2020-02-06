@@ -6,10 +6,10 @@ info:
 servers:
   - description: Kybeidos-intern
     url: http://hw05.kybeidos.de:8083
-security:
-  - OAuth2:
-      - read
-      - write
+#security:
+#  - OAuth2:
+#      - read
+#      - write
 paths:
   /authentication:
     post:
@@ -20,8 +20,8 @@ paths:
       summary: Authenticates a user
       operationId: postAuthentication
       description: Authenticates a user
-      security:
-        - OAuth2: []
+#      security:
+#        - OAuth2: []
       parameters:
         - in: header
           name: Authorization
@@ -39,30 +39,6 @@ paths:
                 format: byte
         '403':
           description: 'Forbidden; invalid credentials'
-  /mandates:
-    get:
-      tags:
-        - mandate
-        - notImplemented
-      summary: Returns an overview of all mandates
-      operationId: getMandates
-      description: |
-        Returns an overview of all mandates a user has access to.
-      security:
-        - OAuth2: [read, admin]
-      responses:
-        '200':
-          description: 'Ok; the body contains links to all mandates'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Mandate'
-        '401':
-          description: 'Unauthorized; you must supply an authorization token'
-        '403':
-          description: 'Forbidden; insufficient permissions'
   /users:
     get:
       tags:
@@ -71,8 +47,8 @@ paths:
       operationId: getUsers
       description: |
         Returns an overview of all users.
-      security:
-        - OAuth2: [admin]
+#      security:
+#        - OAuth2: [admin]
       responses:
         '200':
           description: 'Ok; the body contains links to all users'
@@ -96,8 +72,8 @@ paths:
         already exists. If a new user is created, the user will be sent a confirmation email to complete their
         registration. Upon registration, users authenticate themselves and are thus valid to use other features
         of the API.
-      security:
-        - OAuth2: [write] #TODO: Check whether we want authentication for user registration
+#      security:
+#        - OAuth2: [write] #TODO: Check whether we want authentication for user registration
       requestBody:
         required: true
         content:
@@ -122,7 +98,7 @@ paths:
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
-  /users/{userId}:
+  /users/{uuid}:
     get:
       tags:
         - user
@@ -130,15 +106,15 @@ paths:
       operationId: getUser
       description: |
         Returns information about a specific user. A non-admin user cannot request information about other users.
-      security:
-        - OAuth2: [read, admin]
+#      security:
+#        - OAuth2: [read, admin]
       parameters:
         - in: path
-          name: userId
+          name: uuid
           description: 'the identifier of the user'
           required: true
           schema:
-            $ref: '#/components/schemas/User/properties/id'
+            $ref: '#/components/schemas/User/properties/uuid'
       responses:
         '200':
           description: 'Ok; the body contains information about the user'
@@ -160,15 +136,15 @@ paths:
       description: |
         Creates or replaces information of a specific user. A non-admin user cannot update other users. A user cannot
         invalidate required fields.
-      security:
-        - OAuth2: [write, admin]
+#      security:
+#        - OAuth2: [write, admin]
       parameters:
         - in: path
-          name: userId
+          name: uuid
           description: 'the identifier of the user'
           required: true
           schema:
-            $ref: '#/components/schemas/User/properties/id'
+            $ref: '#/components/schemas/User/properties/uuid'
       requestBody:
         required: true
         content:
@@ -201,15 +177,15 @@ paths:
       description: |
         Upserts information about a specific user. Users may update their own user profile, updating other users
         requires admin permissions. Users may not invalidate required fields.
-      security:
-        - OAuth2: [write, admin]
+#      security:
+#        - OAuth2: [write, admin]
       parameters:
         - in: path
-          name: userId
+          name: uuid
           description: 'the identifier of the user'
           required: true
           schema:
-            $ref: '#/components/schemas/User/properties/id'
+            $ref: '#/components/schemas/User/properties/uuid'
       requestBody:
         required: true
         description: 'New fields will be inserted. Omitted fields will not be changed.'
@@ -242,15 +218,15 @@ paths:
       operationId: deleteUser
       description: |
         Delete a specific user.
-      security:
-        - OAuth2: [admin]
+#      security:
+#        - OAuth2: [admin]
       parameters:
         - in: path
-          name: userId
+          name: uuid
           description: 'the identifier of the user'
           required: true
           schema:
-            $ref: '#/components/schemas/User/properties/id'
+            $ref: '#/components/schemas/User/properties/uuid'
       responses:
         '200':
           description: 'Ok; the user was successfully deleted'
@@ -271,8 +247,8 @@ paths:
       description: |
         Returns an overview of all documents the user has access to. The stress is on "access" here, because this
         request also returns documents of other users the requesting user can access with at least read permissions.
-      security:
-        - OAuth2: [read, admin]
+#      security:
+#        - OAuth2: [read, admin]
       responses:
         '200':
           description: 'Ok; the body contains all documents the user has access to'
@@ -293,11 +269,9 @@ paths:
       summary: Create a document
       operationId: postDocument
       description: |
-        Creates a document. If the path given in the request body already exists, the existing document will be
-        replaced. Use GET /documents/{mandateId}/{path} first to validate whether the document already exists before
-        using this request.
-      security:
-        - OAuth2: [write]
+        Creates a document.
+#      security:
+#        - OAuth2: [write]
       requestBody:
         required: true
         content:
@@ -321,7 +295,7 @@ paths:
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
-  /documents/{mandateId}/{path}:
+  /documents/{uuid}:
     get:
       tags:
         - document
@@ -330,23 +304,15 @@ paths:
       operationId: getDocument
       description: |
         Returns information about the specified document.
-      security:
-        - OAuth2: [read, admin]
+#      security:
+#        - OAuth2: [read, admin]
       parameters:
         - in: path
-          name: mandateId
-          description: 'the identifier of the mandate'
+          name: uuid
+          description: 'the identifier of the document'
           required: true
           schema:
-            type: string
-            example: 'hdman'
-        - in: path
-          name: path
-          description: 'the full path to a document'
-          required: true
-          schema:
-            type: string
-            example: 'some/path/doc.txt'
+           $ref: '#/components/schemas/Document/properties/uuid'
       responses:
         '200':
           description: 'Ok; the body contains information about the document'
@@ -368,23 +334,15 @@ paths:
       operationId: putDocument
       description: |
         Creates or replaces a specific document.
-      security:
-        - OAuth2: [write, admin]
+#      security:
+#        - OAuth2: [write, admin]
       parameters:
         - in: path
-          name: mandateId
-          description: 'the identifier of the mandate'
+          name: uuid
+          description: 'the identifier of the document'
           required: true
           schema:
-            type: string
-            example: 'hdman'
-        - in: path
-          name: path
-          description: 'the full path to a document'
-          required: true
-          schema:
-            type: string
-            example: 'some/path/doc.txt'
+            $ref: '#/components/schemas/Document/properties/uuid'
       requestBody:
         required: true
         content:
@@ -417,23 +375,15 @@ paths:
       description: |
         Updates a specific document. If a document with the given path does not exist, an empty document (with
         that path) will be created and updated with the patch contained in the request body.
-      security:
-        - OAuth2: [write, admin]
+#      security:
+#        - OAuth2: [write, admin]
       parameters:
         - in: path
-          name: mandateId
-          description: 'the identifier of the mandate'
+          name: uuid
+          description: 'the identifier of the document'
           required: true
           schema:
-            type: string
-            example: 'hdman'
-        - in: path
-          name: path
-          description: 'the full path to a document'
-          required: true
-          schema:
-            type: string
-            example: 'some/path/doc.txt'
+            $ref: '#/components/schemas/Document/properties/uuid'
       requestBody:
         required: true
         description: 'New fields will be inserted. Omitted fields will not be affected by the patch.'
@@ -467,23 +417,15 @@ paths:
       description: |
         Deletes a specific document. Requires special permissions to delete the document of another user.
         # TODO: Delete actual document from file system too
-      security:
-        - OAuth2: [write, admin]
+#      security:
+#        - OAuth2: [write, admin]
       parameters:
         - in: path
-          name: mandateId
-          description: 'the identifier of the mandate'
+          name: uuid
+          description: 'the identifier of the document'
           required: true
           schema:
-            type: string
-            example: 'hdman'
-        - in: path
-          name: path
-          description: 'the full path to a document'
-          required: true
-          schema:
-            type: string
-            example: 'some/path/doc.txt'
+            $ref: '#/components/schemas/Document/properties/uuid'
       responses:
         '200':
           description: 'Ok; the document was successfully deleted'
@@ -502,8 +444,8 @@ paths:
       operationId: getServices
       description: |
         Returns an overview of all services the current user has access to.
-      security:
-        - OAuth2: [read, admin]
+#      security:
+#        - OAuth2: [read, admin]
       responses:
         '200':
           description: 'Ok; the body contains links to the services'
@@ -517,7 +459,7 @@ paths:
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
-  /services/{serviceId}:
+  /services/{uuid}:
     get:
       tags:
         - service
@@ -526,12 +468,12 @@ paths:
       operationId: getService
       description: |
         Returns information about a specific service.
-      security:
-        - OAuth2: [read]
+#      security:
+#        - OAuth2: [read]
       parameters:
         - in: path
-          name: serviceId
-          description: 'the ID of the service'
+          name: uuid
+          description: 'the identifier of the service'
           required: true
           schema:
             $ref: '#/components/schemas/Service/properties/id'
@@ -557,8 +499,8 @@ paths:
 #        - OAuth2: [admin]
 #      parameters:
 #        - in: path
-#          name: serviceId
-#          description: 'the ID of the service'
+#          name: uuid
+#          description: 'the identifier of the service'
 #          required: true
 #          schema:
 #            $ref: '#/components/schemas/Service/properties/id'
@@ -596,8 +538,8 @@ paths:
 #        - OAuth2: [admin]
 #      parameters:
 #        - in: path
-#          name: serviceId
-#          description: 'the ID of the service'
+#          name: uuid
+#          description: 'the identifier of the service'
 #          required: true
 #          schema:
 #            $ref: '#/components/schemas/Service/properties/id'
@@ -636,8 +578,8 @@ paths:
 #        - OAuth2: [admin]
 #      parameters:
 #        - in: path
-#          name: serviceId
-#          description: 'the ID of the service'
+#          name: uuid
+#          description: 'the identifier of the service'
 #          required: true
 #          schema:
 #            $ref: '#/components/schemas/Service/properties/id'
@@ -659,8 +601,8 @@ paths:
       operationId: getRequests
       description: |
         Returns an overview of all submitted requests the current user has access to.
-      security:
-        - OAuth2: [read, admin]
+#      security:
+#        - OAuth2: [read, admin]
       responses:
         '200':
           description: 'Ok; the body contains links to the requests'
@@ -682,8 +624,8 @@ paths:
       operationId: postRequest
       description: |
         Creates a request.
-      security:
-        - OAuth2: [write]
+#      security:
+#        - OAuth2: [write]
       requestBody:
         required: true
         description: Result and Status objects should be not passed
@@ -708,7 +650,7 @@ paths:
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
-  /requests/{requestId}:
+  /requests/{uuid}:
     get:
       tags:
         - request
@@ -717,11 +659,11 @@ paths:
       operationId: getRequest
       description: |
         Returns information about a specific request.
-      security:
-        - OAuth2: [read, admin]
+#      security:
+#        - OAuth2: [read, admin]
       parameters:
         - in: path
-          name: requestId
+          name: uuid
           description: 'the identifier of the request'
           required: true
           schema:
@@ -748,11 +690,11 @@ paths:
       description: |
         Cancels a specific request.
         # TODO: Implement cancellation instead of request deletion (for request and status tracking)
-      security:
-        - OAuth2: [write, admin]
+#      security:
+#        - OAuth2: [write, admin]
       parameters:
         - in: path
-          name: requestId
+          name: uuid
           description: 'the identifier of the request'
           required: true
           schema:
@@ -766,7 +708,7 @@ paths:
           description: 'Forbidden; insufficient permissions'
         '404':
           description: 'Not found; the request does not exist'
-  /requests/{requestId}/status:
+  /requests/{uuid}/status:
     get:
       tags:
         - request
@@ -775,11 +717,11 @@ paths:
       operationId: getRequestStatus
       description: |
         Queries the status of a specific request.
-      security:
-        - OAuth2: [read, admin]
+#      security:
+#        - OAuth2: [read, admin]
       parameters:
         - in: path
-          name: requestId
+          name: uuid
           description: 'the identifier of the request'
           required: true
           schema:
@@ -804,11 +746,11 @@ paths:
       operationId: patchRequestStatus
       description: |
         Upserts the status of a specific request.
-      security:
-        - OAuth2: [admin]
+#      security:
+#        - OAuth2: [admin]
       parameters:
         - in: path
-          name: requestId
+          name: uuid
           description: 'the identifier of the request'
           required: true
           schema:
@@ -821,7 +763,7 @@ paths:
         '403':
           description: 'Forbidden; insufficient permissions'
 
-  /requests/{requestId}/result:
+  /requests/{uuid}/result:
     get:
       tags:
         - request
@@ -830,11 +772,11 @@ paths:
       operationId: getRequestResult
       description: |
         Get the processing result for a specific request.
-      security:
-        - OAuth2: [read, admin]
+#      security:
+#        - OAuth2: [read, admin]
       parameters:
         - in: path
-          name: requestId
+          name: uuid
           description: 'the identifier of the request'
           required: true
           schema:
@@ -855,105 +797,160 @@ paths:
           description: 'Not found; the request does not exist'
 
 components:
-  securitySchemes:
-    OAuth2:
-      type: oauth2
-      flows:
-        authorizationCode:
-          authorizationUrl: https://example.com/oauth/authorize
-          tokenUrl: https://example.com/oauth/token
-          scopes:
-            read: Grants read access
-            write: Grants read and write access
-            admin: Grants access to admin operations
+#  securitySchemes:
+#    OAuth2:
+#      type: oauth2
+#      flows:
+#        authorizationCode:
+#          authorizationUrl: https://example.com/oauth/authorize
+#          tokenUrl: https://example.com/oauth/token
+#          scopes:
+#            read: Grants read access
+#            write: Grants read and write access
+#            admin: Grants access to admin operations
   schemas:
+    Uuid:
+      type: string
+      format: uuid
+      example: '123e4567-e89b-12d3-a456-55664244'
+      readOnly: true
+    DateTime:
+      type: string
+      format: 'date-time'
+      example: '2019-07-11T15:32:10.000Z'
+    Status:
+      type: string
+      enum: ['AVAILABLE', 'DELETED']
+      readOnly: true
     User:
       type: object
       required:
+        - name
         - email
-        - username
-        - fullName
-        - organisation
-        - roles
       properties:
-        id:
+        uuid:
+          $ref: '#/components/schemas/Uuid'
+        createdBy:
+          $ref: '#/components/schemas/User'
+        modifiedBy:
+          $ref: '#/components/schemas/User'
+        dateCreated:
+          $ref: '#/components/schemas/DateTime'
+        dateModified:
+          $ref: '#/components/schemas/DateTime'
+        name:
           type: string
-          format: uuid
-          example: '123e4567-e89b-12d3-a456-55664244'
-          readOnly: true
+          example: 'mamuster'
+        status:
+          $ref: '#/components/schemas/Status'
         email:
           type: string
           format: email
           example: 'max.mustermann@muster.de'
-        username:
-          type: string
-          example: 'mamuster'
         fullName:
           type: string
           example: 'Max Mustermann'
-        organisation:
-          type: string
-          example: 'Muster GmbH'
-        registrationStatus:
-          type: string
-          example: 'PENDING' #TODO: Implement registration status
-          readOnly: true
-        roles:
-          type: array
-          items:
-            type: string
-          example: ['admin', 'user']
-    Payment:
-      type: object
-      properties:
-        transactionId:
-          type: string
-        dateCreated:
-          type: string
-          format: 'date-time'
-        dateFinished:
-          type: string
-          format: 'date-time'
-    Organisation:
-      type: object
-      properties:
-        homepage:
-          type: string
-        name:
-          type: string
-        address:
-          type: array
-          items:
-            type: string
     Document:
       type: object
       required:
-        - path
-        - url
+        - name
       properties:
-        creator:
+        uuid:
+          $ref: '#/components/schemas/Uuid'
+        createdBy:
           $ref: '#/components/schemas/User'
-        editor:
+        modifiedBy:
           $ref: '#/components/schemas/User'
         dateCreated:
-          type: string
-          format: 'date-time'
-          example: '2019-07-11T15:32:10.000Z'
+          $ref: '#/components/schemas/DateTime'
         dateModified:
+          $ref: '#/components/schemas/DateTime'
+        name:
           type: string
-          format: 'date-time'
-          example: '2019-07-15T15:32:28.000Z'
+          example: 'myfile.txt'
+        status:
+          $ref: '#/components/schemas/Status'
         encodingFormat:
           type: string
           example: 'text/plain'
-        path:
+          readOnly: true
+    Domain:
+      type: object
+      required:
+        - name
+      properties:
+        uuid:
+          $ref: '#/components/schemas/Uuid'
+        createdBy:
+          $ref: '#/components/schemas/User'
+        modifiedBy:
+          $ref: '#/components/schemas/User'
+        dateCreated:
+          $ref: '#/components/schemas/DateTime'
+        dateModified:
+          $ref: '#/components/schemas/DateTime'
+        name:
           type: string
-          example: '/mandate/some/path/summary.txt'
-        url:
+          example: 'kybeidos_docs'
+        status:
+          $ref: '#/components/schemas/Status'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        originator:
+          $ref: '#/components/schemas/Originator'
+    Originator:
+      type: object
+      required:
+        - name
+      properties:
+        uuid:
+          $ref: '#/components/schemas/Uuid'
+        createdBy:
+          $ref: '#/components/schemas/User'
+        modifiedBy:
+          $ref: '#/components/schemas/User'
+        dateCreated:
+          $ref: '#/components/schemas/DateTime'
+        dateModified:
+          $ref: '#/components/schemas/DateTime'
+        name:
           type: string
-          example: 'hdfs://someserv.er/summary.txt?op=OPEN'
-        geodata:
+          example: 'Kybeidos'
+        status:
+          $ref: '#/components/schemas/Status'
+        geolocation:
+          type: array
+          items:
+            type: double
+          minItems: 2
+          maxItems: 2
+          example: [51.507351, -0.127758]
+    UseCase:
+      type: object
+      required:
+        - name
+      properties:
+        uuid:
+          $ref: '#/components/schemas/Uuid'
+        createdBy:
+          $ref: '#/components/schemas/User'
+        modifiedBy:
+          $ref: '#/components/schemas/User'
+        dateCreated:
+          $ref: '#/components/schemas/DateTime'
+        dateModified:
+          $ref: '#/components/schemas/DateTime'
+        name:
           type: string
+          example: 'Kybeidos & friends'
+        status:
+          $ref: '#/components/schemas/Status'
+        domains:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
     Service:
       type: object
       readOnly: true
@@ -1048,7 +1045,7 @@ components:
         documentIds:
           type: array
           items:
-            $ref: '#/components/schemas/Document/properties/path'
+            $ref: '#/components/schemas/Document/properties/uuid'
         status:
           $ref: '#/components/schemas/RequestStatus'
         result:
@@ -1108,49 +1105,3 @@ components:
           type: string
         type:
           type: string
-    Link:
-      type: object
-      required:
-        - rel
-        - href
-        - method
-      properties:
-        rel:
-          type: string
-          example: 'user'
-        href:
-          type: string
-          format: URI
-          example: '/users/mamuster'
-        method:
-          type: string
-          enum:
-            - DELETE
-            - GET
-            - PATCH
-            - POST
-            - PUT
-    Mandate:
-      type: object
-      required:
-        - users
-      properties:
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/AccessPolicy'
-    AccessPolicy:
-      type: object
-      required:
-        - user
-        - read
-        - write
-      properties:
-        user:
-          $ref: '#/components/schemas/Link'
-        read:
-          type: boolean
-          example: true
-        write:
-          type: boolean
-          example: false
