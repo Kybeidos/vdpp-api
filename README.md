@@ -6,55 +6,76 @@ The VDPP REST API is designed around the aspect of documents, (NLP) services and
 
 ## Table of Contents
 1. [Structure](#1-structure)
-    1. [Documents](#11-documents)
-    2. [Services](#12-services)
-    3. [Requests](#13-requests)
+    1. [Use Cases, Domains, Originators](#11-use-cases-domains-originators)
+    2. [Documents](#12-documents)
+    2. [Services](#13-services)
+    3. [Requests](#14-requests)
 2. [Example Scenario](#2-example-scenario)
 3. [Links](#3-links)
 
 ## 1. Structure
-An application that wants to use the VDPP REST API mainly interacts with three domain objects:
-1. **Documents**:   A document object represents an arbitrary file including various metadata.
-                    It is identified by its unique `path`.
-2. **Services**:    A service object represents a service that ingests and processes documents.
+An application that wants to use the VDPP REST API interacts with the following domain objects:
+1. **Use cases**:   A use case object represents an independent project to which users can upload documents to.
+                    It is identified by its `uuid`.
+2. **Domains**:     A domain is a collection of documents associated with a originator.
+                    It is identified by its `uuid`.
+3. **Originator**:  An originator is a characterizing document source.
+                    It is identified by its `uuid`.
+4. **Documents**:   A document object represents an arbitrary file including various metadata.
+                    It is identified by its `uuid`.
+5. **Services**:    A service object represents a service that ingests and processes documents.
                     The service may also create various results (i.e. summaries).
                     It is identified by its unique `code`.
-3. **Requests**:    A request object represents a user-request. It also tracks the processing status
+6. **Requests**:    A request object represents a user-request. It also tracks the processing status
                     and provides the processing results once available.
-                    It is identified by its unique `id`.
-                    
-### 1.1. Documents
+                    It is identified by its `uuid`.
+
+### 1.1 Use Cases, Domains, Originators
+Use cases represent independent projects within VDPP. It is the top level in the document hierarchy.
+
+Domains group documents and unify them under a specified originator.
+This allows NLP services to model different domains of expertise.
+
+Originators denote a document source. In reality, this could be a company, a division, a person, a party, ...
+
+```
+                               -- Document 1A
+                              /
+              -- Domain 1 ---| -- Document 1B
+             /  (Originator I)
+Use case ---|                         .
+             \                        .
+              -- Domain 2             .
+                (Originator II)       
+
+                    .                 
+                    .
+                    .
+
+```
+
+### 1.2. Documents
 Documents act as the data source for VDPP's services. Currently, the platform cannot directly process
 documents located on the user's system. All relevant files must be uploaded instead.
 
-There are two ways to upload documents to the VDPP service:
-* Specifying an external URL that VDPP can download the document from.
-Send a `POST` request to the endpoint `/documents` with the following minimal JSON body:
-```
-{
-    "path": "/my/unique/path/file.txt",
-    "url": "http://direct.link.com"
-}
-```
-* Directly uploading the document via the VDPP API. Send a `POST` request to the endpoint `/documents` of format
+Currently, the document can only be directly upload via the VDPP API. Send a `POST` request to the endpoint `/documents` of format
 `multipart/form-data`:
 
 Using cURL
 ```
 curl --request POST 'http://host:port/documents' \
 --header 'Content-Type: multipart/form-data' \
---form 'path=/my/unique/path/' \
---form 'doc01.txt=@/user/me/doc01.txt' \
---form 'doc02.txt=@/user/me/doc02.txt'
+--form 'files=@/user/me/doc01.txt' \
+--form 'files=@/user/me/doc02.txt'
 ```
 
-Either way results in the document uploaded to be available for processing with one of VDPP's services.
+The documents uploaded will be available for processing with one of VDPP's services.
 
-### 1.2. Services
+### 1.3. Services
 The list of available services can be retrieved by sending a `GET /services` request.
 Each service description contains information about the usage (i.e. parametrization) of the service.
 
-### 1.3. Requests
+### 1.4. Requests
 Requests combine documents and a service to trigger processing in VDPP.
 To create a request, users must `POST` a JSON body to the endpoint `/requests` of the following format:
 ```
@@ -69,8 +90,8 @@ To create a request, users must `POST` a JSON body to the endpoint `/requests` o
     	"values": ["value1", "value2"]
     }],
     "documentIds": [
-            "/my/unique/path/doc01.txt",
-            "/my/unique/path/doc02.txt"
+            "123e4567-e89b-12d3-a456-55664244",
+            "999ea999-b9be-4da1-1167-f24578a0"
     ]
 }
 ```
@@ -84,25 +105,61 @@ First, he uploads his document using cURL:
 ```
 curl --request POST 'http://host:port/documents' \
 --header 'Content-Type: multipart/form-data' \
---form 'path=/bobsdocuments/' \
---form 'doc01.txt=@/user/me/doc01.txt'
+--form 'files=@/user/me/doc01.txt'
 ```
 If everything went fine, he should receive the following answer with status code `200 OK`:
 ```
 [
     {
-        "path": "/bobsdocuments/doc01.txt",
-        "creator": null,
-        "editor": null,
+        "uuid": "123e4567-e89b-12d3-a456-55664244",
+        "createdBy": null,
+        "modifiedBy": null,
         "dateCreated": "2020-01-13T13:11:10.236+0000",
         "dateModified": "2020-01-13T13:11:10.236+0000",
+        "name": "doc01.txt",
+        "status": "AVAILABLE",
         "encodingFormat": "text/plain",
-        "geoData": null,
-        "url": null
     }
 ]
 ```
 
+(2)
+Bob wants to denote, that he's the source of that document. So he will create a new originator:
+```
+curl --request POST 'http://host:port/originators' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "Bob"
+}'
+```
+
+The answer to that request could be:
+```
+{
+    "uuid": "aef87986-20a2-97ff-2a87-54f5b6a4",
+    "createdBy": null,
+    "modifiedBy": null,
+    "dateCreated": "2020-01-13T13:11:10.236+0000",
+    "dateModified": "2020-01-13T13:11:10.236+0000",
+    "name": "Bob",
+    "status": "AVAILABLE",
+    "geoLocation": null
+}
+```
+
+(3)
+In the next step, he needs to assign his document to a domain.
+```
+curl --request POST 'http://host:port/domains' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "Bobs_documents",
+    "documents": [
+        "123e4567-e89b-12d3-a456-55664244"
+    ],
+    "originator": "aef87986-20a2-97ff-2a87-54f5b6a4"
+}'
+```
 (2)
 Bob forgot the exact name for the summarization service, so he sends following request using cURL:
 ```
