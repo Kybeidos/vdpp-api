@@ -236,7 +236,6 @@ paths:
           description: 'Forbidden; insufficient permissions'
         '404':
           description: 'Not found; the user does not exist'
-
   /documents:
     get:
       tags:
@@ -266,27 +265,35 @@ paths:
       tags:
         - document
         - clientApi
-      summary: Create a document
-      operationId: postDocument
+      summary: Create one or more documents
+      operationId: postDocuments
       description: |
-        Creates a document.
+        Creates one or more documents.
 #      security:
 #        - OAuth2: [write]
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Document'
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
       responses:
         '200':
-          description: 'Created; document created or updated'
-          headers:
-            Location:
+          description: 'Created; documents created'
+          content:
+            application/json:
               schema:
-                $ref: '#/components/schemas/Document'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
         '400':
-          description: 'Bad request; the document contains invalid fields, the body describes which'
+          description: 'Bad request; the documents contains invalid fields, the body describes which'
           content:
             text/plain:
               schema:
@@ -435,6 +442,597 @@ paths:
           description: 'Forbidden; insufficient permissions'
         '404':
           description: 'Not found; the document does not exist'
+  /domains:
+    get:
+      tags:
+        - domain
+        - clientApi
+      summary: Returns an overview of all domains
+      operationId: getDomains
+      description: |
+        Returns an overview of all domains the user has access to.
+      #      security:
+      #        - OAuth2: [read, admin]
+      responses:
+        '200':
+          description: 'Ok; the body contains an array of domains'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Domain'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    post:
+      tags:
+        - domain
+        - clientApi
+      summary: Create a domain
+      operationId: postDomains
+      description: |
+        Creates a domain.
+      #      security:
+      #        - OAuth2: [write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Domain'
+      responses:
+        '200':
+          description: 'Created; domain created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        '400':
+          description: 'Bad request; the domain contains invalid fields, the body describes which'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+  /domains/{uuid}:
+    get:
+      tags:
+        - domain
+        - clientApi
+      summary: Returns a specific domain
+      operationId: getDomain
+      description: |
+        Returns information about a specific domain.
+      #      security:
+      #        - OAuth2: [read, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the domain'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Domain/properties/uuid'
+      responses:
+        '200':
+          description: 'Ok; the body contains information about the domain'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the domain does not exist'
+    put:
+      tags:
+        - domain
+        - clientApi
+      summary: Create or replace information about a specific domain
+      operationId: putDomain
+      description: |
+        Creates or replaces information of a specific domain.
+      #      security:
+      #        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the domain'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Domain/properties/uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Domain'
+      responses:
+        '200':
+          description: 'Ok; the body contains the updated information about the domain'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        '400':
+          description: 'Bad request; the input is malformed or would invalidate required fields'
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: 'The error message with the exact cause'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    patch:
+      tags:
+        - domain
+        - clientApi
+      summary: Upserts information about a specific domain
+      operationId: patchDomain
+      description: |
+        Upserts information about a specific domain.
+      #      security:
+      #        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the domain'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Domain/properties/uuid'
+      requestBody:
+        required: true
+        description: 'New fields will be inserted. Omitted fields will not be changed.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Domain'
+      responses:
+        '200':
+          description: 'Ok; the body contains the updated information about the domain'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        '400':
+          description: 'Bad request; the input is malformed or required fields have been invalidated'
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: 'The error message with the exact cause'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    delete:
+      tags:
+        - domain
+        - clientApi
+      summary: Delete a specific domain
+      operationId: deleteDomain
+      description: |
+        Delete a specific domain.
+      #      security:
+      #        - OAuth2: [admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the domain'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Domain/properties/uuid'
+      responses:
+        '200':
+          description: 'Ok; the domain was successfully deleted'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the domain does not exist'
+  /usecases:
+    get:
+      tags:
+        - useCase
+        - clientApi
+      summary: Returns an overview of all use cases
+      operationId: getUseCases
+      description: |
+        Returns an overview of all use cases the user has access to.
+      #      security:
+      #        - OAuth2: [read, admin]
+      responses:
+        '200':
+          description: 'Ok; the body contains an array of use cases'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UseCase'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    post:
+      tags:
+        - useCase
+        - clientApi
+      summary: Create a use case
+      operationId: postUseCases
+      description: |
+        Creates a use case.
+      #      security:
+      #        - OAuth2: [write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UseCase'
+      responses:
+        '200':
+          description: 'Created; use case created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UseCase'
+        '400':
+          description: 'Bad request; the use case contains invalid fields, the body describes which'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+  /usecases/{uuid}:
+    get:
+      tags:
+        - useCase
+        - clientApi
+      summary: Returns a specific use case
+      operationId: getUseCase
+      description: |
+        Returns information about a specific use case.
+      #      security:
+      #        - OAuth2: [read, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the use case'
+          required: true
+          schema:
+            $ref: '#/components/schemas/UseCase/properties/uuid'
+      responses:
+        '200':
+          description: 'Ok; the body contains information about the use case'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UseCase'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the use case does not exist'
+    put:
+      tags:
+        - useCase
+        - clientApi
+      summary: Create or replace information about a specific use case
+      operationId: putUseCase
+      description: |
+        Creates or replaces information of a specific use case.
+      #      security:
+      #        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the use case'
+          required: true
+          schema:
+            $ref: '#/components/schemas/UseCase/properties/uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UseCase'
+      responses:
+        '200':
+          description: 'Ok; the body contains the updated information about the use case'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UseCase'
+        '400':
+          description: 'Bad request; the input is malformed or would invalidate required fields'
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: 'The error message with the exact cause'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    patch:
+      tags:
+        - useCase
+        - clientApi
+      summary: Upserts information about a specific use case
+      operationId: patchUseCase
+      description: |
+        Upserts information about a specific use case.
+      #      security:
+      #        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the use case'
+          required: true
+          schema:
+            $ref: '#/components/schemas/UseCase/properties/uuid'
+      requestBody:
+        required: true
+        description: 'New fields will be inserted. Omitted fields will not be changed.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UseCase'
+      responses:
+        '200':
+          description: 'Ok; the body contains the updated information about the use case'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UseCase'
+        '400':
+          description: 'Bad request; the input is malformed or required fields have been invalidated'
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: 'The error message with the exact cause'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    delete:
+      tags:
+        - useCase
+        - clientApi
+      summary: Delete a specific use case
+      operationId: deleteUseCase
+      description: |
+        Delete a specific use case.
+      #      security:
+      #        - OAuth2: [admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the use case'
+          required: true
+          schema:
+            $ref: '#/components/schemas/UseCase/properties/uuid'
+      responses:
+        '200':
+          description: 'Ok; the use case was successfully deleted'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the use case does not exist'
+  /originators:
+    get:
+      tags:
+        - originator
+        - clientApi
+      summary: Returns an overview of all originators
+      operationId: getOriginators
+      description: |
+        Returns an overview of all originators the user has access to.
+      #      security:
+      #        - OAuth2: [read, admin]
+      responses:
+        '200':
+          description: 'Ok; the body contains an array of originators'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Originator'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    post:
+      tags:
+        - originator
+        - clientApi
+      summary: Create a originator
+      operationId: postOriginators
+      description: |
+        Creates a originator.
+      #      security:
+      #        - OAuth2: [write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Originator'
+      responses:
+        '200':
+          description: 'Created; originator created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Originator'
+        '400':
+          description: 'Bad request; the originator contains invalid fields, the body describes which'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+  /originators/{uuid}:
+    get:
+      tags:
+        - originator
+        - clientApi
+      summary: Returns a specific originator
+      operationId: getOriginator
+      description: |
+        Returns information about a specific originator.
+      #      security:
+      #        - OAuth2: [read, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the originator'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Originator/properties/uuid'
+      responses:
+        '200':
+          description: 'Ok; the body contains information about the originator'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Originator'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the originator does not exist'
+    put:
+      tags:
+        - originator
+        - clientApi
+      summary: Create or replace information about a specific originator
+      operationId: putOriginator
+      description: |
+        Creates or replaces information of a specific originator.
+      #      security:
+      #        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the originator'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Originator/properties/uuid'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Originator'
+      responses:
+        '200':
+          description: 'Ok; the body contains the updated information about the originator'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Originator'
+        '400':
+          description: 'Bad request; the input is malformed or would invalidate required fields'
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: 'The error message with the exact cause'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    patch:
+      tags:
+        - originator
+        - clientApi
+      summary: Upserts information about a specific originator
+      operationId: patchOriginator
+      description: |
+        Upserts information about a specific originator.
+      #      security:
+      #        - OAuth2: [write, admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the originator'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Originator/properties/uuid'
+      requestBody:
+        required: true
+        description: 'New fields will be inserted. Omitted fields will not be changed.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Originator'
+      responses:
+        '200':
+          description: 'Ok; the body contains the updated information about the originator'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Originator'
+        '400':
+          description: 'Bad request; the input is malformed or required fields have been invalidated'
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: 'The error message with the exact cause'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+    delete:
+      tags:
+        - originator
+        - clientApi
+      summary: Delete a specific originator
+      operationId: deleteOriginator
+      description: |
+        Delete a specific originator.
+      #      security:
+      #        - OAuth2: [admin]
+      parameters:
+        - in: path
+          name: uuid
+          description: 'the identifier of the originator'
+          required: true
+          schema:
+            $ref: '#/components/schemas/Originator/properties/uuid'
+      responses:
+        '200':
+          description: 'Ok; the originator was successfully deleted'
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
+        '404':
+          description: 'Not found; the originator does not exist'
   /services:
     get:
       tags:
@@ -488,110 +1086,6 @@ paths:
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
-#    put:
-#      tags:
-#        - service
-#      summary: Creates or replaces a specific service
-#      operationId: putService
-#      description: |
-#        Creates or replaces a specific service.
-#      security:
-#        - OAuth2: [admin]
-#      parameters:
-#        - in: path
-#          name: uuid
-#          description: 'the identifier of the service'
-#          required: true
-#          schema:
-#            $ref: '#/components/schemas/Service/properties/id'
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/Service'
-#      responses:
-#        '200':
-#          description: 'Ok; the service was created or updated and the body contains the new service'
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/Service'
-#        '400':
-#          description: 'Bad request; the service contains invalid fields, the body describes which'
-#          content:
-#            text/plain:
-#              schema:
-#                type: string
-#        '401':
-#          description: 'Unauthorized; you must supply an authorization token'
-#        '403':
-#          description: 'Forbidden; insufficient permissions'
-#    patch:
-#      tags:
-#        - service
-#      summary: Upserts a specific service
-#      operationId: patchService
-#      description: |
-#        Upserts a specific service.
-#      security:
-#        - OAuth2: [admin]
-#      parameters:
-#        - in: path
-#          name: uuid
-#          description: 'the identifier of the service'
-#          required: true
-#          schema:
-#            $ref: '#/components/schemas/Service/properties/id'
-#      requestBody:
-#        required: true
-#        description: 'New fields will be inserted. Omitted fields will not be updated.'
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/Service'
-#      responses:
-#        '200':
-#          description: 'Ok; the service was created or updated and the body contains the new service'
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/Service'
-#        '400':
-#          description: 'Bad request; the service contains invalid fields, the body describes which'
-#          content:
-#            text/plain:
-#              schema:
-#                type: string
-#        '401':
-#          description: 'Unauthorized; you must supply an authorization token'
-#        '403':
-#          description: 'Forbidden; insufficient permissions'
-#    delete:
-#      tags:
-#        - service
-#      summary: Deletes a specific service
-#      operationId: deleteService
-#      description: |
-#        Deletes a specific service.
-#      security:
-#        - OAuth2: [admin]
-#      parameters:
-#        - in: path
-#          name: uuid
-#          description: 'the identifier of the service'
-#          required: true
-#          schema:
-#            $ref: '#/components/schemas/Service/properties/id'
-#      responses:
-#        '200':
-#          description: 'Ok; the service was successfully deleted'
-#        '401':
-#          description: 'Unauthorized; you must supply an authorization token'
-#        '403':
-#          description: 'Forbidden; insufficient permissions'
-#        '404':
-#          description: 'Not found; the service does not exist'
   /requests:
     get:
       tags:
@@ -874,6 +1368,8 @@ components:
           type: string
           example: 'text/plain'
           readOnly: true
+        domain:
+          $ref: '#/components/schemas/Domain'
     Domain:
       type: object
       required:
@@ -920,6 +1416,8 @@ components:
           example: 'Kybeidos'
         status:
           $ref: '#/components/schemas/Status'
+        useCase:
+          $ref: '#/components/schemas/UseCase'
         geolocation:
           type: array
           items:
