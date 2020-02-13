@@ -639,26 +639,26 @@ paths:
           description: 'Forbidden; insufficient permissions'
         '404':
           description: 'Not found; the domain does not exist'
-  /usecases:
+  /projects:
     get:
       tags:
         - useCase
         - clientApi
-      summary: Returns an overview of all use cases
-      operationId: getUseCases
+      summary: Returns an overview of all projects
+      operationId: getProjects
       description: |
-        Returns an overview of all use cases the user has access to.
+        Returns an overview of all projects the user has access to.
       #      security:
       #        - OAuth2: [read, admin]
       responses:
         '200':
-          description: 'Ok; the body contains an array of use cases'
+          description: 'Ok; the body contains an array of projects'
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UseCase'
+                  $ref: '#/components/schemas/Project'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
@@ -667,10 +667,10 @@ paths:
       tags:
         - useCase
         - clientApi
-      summary: Create a use case
-      operationId: postUseCases
+      summary: Create a project
+      operationId: postProjects
       description: |
-        Creates a use case.
+        Creates a project.
       #      security:
       #        - OAuth2: [write]
       requestBody:
@@ -678,16 +678,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UseCase'
+              $ref: '#/components/schemas/Project'
       responses:
         '200':
-          description: 'Created; use case created'
+          description: 'Created; project created'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UseCase'
+                $ref: '#/components/schemas/Project'
         '400':
-          description: 'Bad request; the use case contains invalid fields, the body describes which'
+          description: 'Bad request; the project contains invalid fields, the body describes which'
           content:
             text/plain:
               schema:
@@ -696,67 +696,67 @@ paths:
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
-  /usecases/{uuid}:
+  /projects/{uuid}:
     get:
       tags:
         - useCase
         - clientApi
-      summary: Returns a specific use case
-      operationId: getUseCase
+      summary: Returns a specific project
+      operationId: getProject
       description: |
-        Returns information about a specific use case.
+        Returns information about a specific project.
       #      security:
       #        - OAuth2: [read, admin]
       parameters:
         - in: path
           name: uuid
-          description: 'the identifier of the use case'
+          description: 'the identifier of the project'
           required: true
           schema:
-            $ref: '#/components/schemas/UseCase/properties/uuid'
+            $ref: '#/components/schemas/Project/properties/uuid'
       responses:
         '200':
-          description: 'Ok; the body contains information about the use case'
+          description: 'Ok; the body contains information about the project'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UseCase'
+                $ref: '#/components/schemas/Project'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
         '404':
-          description: 'Not found; the use case does not exist'
+          description: 'Not found; the project does not exist'
     put:
       tags:
         - useCase
         - clientApi
-      summary: Create or replace information about a specific use case
-      operationId: putUseCase
+      summary: Create or replace information about a specific project
+      operationId: putProject
       description: |
-        Creates or replaces information of a specific use case.
+        Creates or replaces information of a specific project.
       #      security:
       #        - OAuth2: [write, admin]
       parameters:
         - in: path
           name: uuid
-          description: 'the identifier of the use case'
+          description: 'the identifier of the project'
           required: true
           schema:
-            $ref: '#/components/schemas/UseCase/properties/uuid'
+            $ref: '#/components/schemas/Project/properties/uuid'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UseCase'
+              $ref: '#/components/schemas/Project'
       responses:
         '200':
-          description: 'Ok; the body contains the updated information about the use case'
+          description: 'Ok; the body contains the updated information about the project'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UseCase'
+                $ref: '#/components/schemas/Project'
         '400':
           description: 'Bad request; the input is malformed or would invalidate required fields'
           content:
@@ -772,33 +772,33 @@ paths:
       tags:
         - useCase
         - clientApi
-      summary: Upserts information about a specific use case
-      operationId: patchUseCase
+      summary: Upserts information about a specific project
+      operationId: patchProject
       description: |
-        Upserts information about a specific use case.
+        Upserts information about a specific project.
       #      security:
       #        - OAuth2: [write, admin]
       parameters:
         - in: path
           name: uuid
-          description: 'the identifier of the use case'
+          description: 'the identifier of the project'
           required: true
           schema:
-            $ref: '#/components/schemas/UseCase/properties/uuid'
+            $ref: '#/components/schemas/Project/properties/uuid'
       requestBody:
         required: true
         description: 'New fields will be inserted. Omitted fields will not be changed.'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UseCase'
+              $ref: '#/components/schemas/Project'
       responses:
         '200':
-          description: 'Ok; the body contains the updated information about the use case'
+          description: 'Ok; the body contains the updated information about the project'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UseCase'
+                $ref: '#/components/schemas/Project'
         '400':
           description: 'Bad request; the input is malformed or required fields have been invalidated'
           content:
@@ -814,28 +814,28 @@ paths:
       tags:
         - useCase
         - clientApi
-      summary: Delete a specific use case
-      operationId: deleteUseCase
+      summary: Delete a specific project
+      operationId: deleteProject
       description: |
-        Delete a specific use case.
+        Delete a specific project.
       #      security:
       #        - OAuth2: [admin]
       parameters:
         - in: path
           name: uuid
-          description: 'the identifier of the use case'
+          description: 'the identifier of the project'
           required: true
           schema:
-            $ref: '#/components/schemas/UseCase/properties/uuid'
+            $ref: '#/components/schemas/Project/properties/uuid'
       responses:
         '200':
-          description: 'Ok; the use case was successfully deleted'
+          description: 'Ok; the project was successfully deleted'
         '401':
           description: 'Unauthorized; you must supply an authorization token'
         '403':
           description: 'Forbidden; insufficient permissions'
         '404':
-          description: 'Not found; the use case does not exist'
+          description: 'Not found; the project does not exist'
   /originators:
     get:
       tags:
@@ -1364,6 +1364,10 @@ components:
           example: 'myfile.txt'
         status:
           $ref: '#/components/schemas/Status'
+        content:
+          type: string
+          format: binary
+          readOnly: true
         encodingFormat:
           type: string
           example: 'text/plain'
@@ -1396,8 +1400,8 @@ components:
             $ref: '#/components/schemas/Document'
         originator:
           $ref: '#/components/schemas/Originator'
-        useCaseUuid:
-          $ref: '#/components/schemas/UseCase/properties/uuid'
+        projectUuid:
+          $ref: '#/components/schemas/Project/properties/uuid'
     Originator:
       type: object
       required:
@@ -1427,7 +1431,7 @@ components:
           minItems: 2
           maxItems: 2
           example: [51.507351, -0.127758]
-    UseCase:
+    Project:
       type: object
       required:
         - name
