@@ -1409,6 +1409,8 @@ components:
       type: object
       required:
         - name
+        - documentUuids
+        - originatorUuid
       properties:
         uuid:
           $ref: '#/components/schemas/Uuid'
