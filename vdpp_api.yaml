@@ -1322,6 +1322,46 @@ paths:
           description: 'Forbidden; insufficient permissions'
         '404':
           description: 'Not found; the file does not exist'
+    post:
+      tags:
+        - file
+      summary: Upload a file
+      operationId: postFile
+      description: |
+        Uploads a file. Note that is endpoint should only used by internal services requiring public storage.
+      #      security:
+      #        - OAuth2: [write]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: 'Created; files uploaded'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document/properties/fileUuid'
+        '400':
+          description: 'Bad request; the request body is missing or does not contain any files to upload'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          description: 'Unauthorized; you must supply an authorization token'
+        '403':
+          description: 'Forbidden; insufficient permissions'
 
 components:
 #  securitySchemes:
@@ -1458,12 +1498,17 @@ components:
         domainUuid:
           $ref: '#/components/schemas/Domain/properties/uuid'
         geolocation:
+          description: Currently describes a point using longitude and latitude
           type: array
           items:
             type: double
           minItems: 2
           maxItems: 2
           example: [51.507351, -0.127758]
+        url:
+          type: string
+        address:
+          type: string
     Project:
       type: object
       required:
